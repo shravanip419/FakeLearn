@@ -1,0 +1,86 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report
+
+# 1. Create dataset
+data = {
+    'Age': [22, 25, 28, 30, 35, 40, 45, 50, 55, 60],
+    'Income': [20, 25, 30, 35, 40, 45, 50, 55, 60, 65],
+    'Purchase': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+}
+
+df = pd.DataFrame(data)
+
+print("Dataset:")
+print(df)
+
+# 2. Separate X and y
+X = df[['Age', 'Income']]
+y = df['Purchase']
+
+# 3. Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# 4. Create and train AdaBoost model
+model = AdaBoostClassifier(
+    n_estimators=50,
+    learning_rate=1.0,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+# 5. Make predictions
+y_pred = model.predict(X_test)
+
+# 6. Evaluate model
+print("\nActual Values:", list(y_test))
+print("Predicted Values:", y_pred)
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, zero_division=0))
+
+# 7. Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+print("Confusion Matrix:")
+print(cm)
+
+# 8. Predict for new data
+new_data = pd.DataFrame({
+    'Age': [32],
+    'Income': [38]
+})
+
+prediction = model.predict(new_data)
+
+if prediction[0] == 1:
+    print("Customer will Purchase")
+else:
+    print("Customer will Not Purchase")
+
+# 9. Visualization - Confusion Matrix
+plt.figure(figsize=(5, 4))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Greens')
+
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("AdaBoost - Confusion Matrix")
+plt.show()
+
+# 10. Visualization - Feature Importance
+plt.figure(figsize=(5, 4))
+plt.bar(X.columns, model.feature_importances_)
+
+plt.xlabel("Features")
+plt.ylabel("Importance")
+plt.title("AdaBoost - Feature Importance")
+plt.show()
